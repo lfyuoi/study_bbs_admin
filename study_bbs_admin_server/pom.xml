@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>study_bbs_admin_server</artifactId>
+    <!--
+    relativePath:
+        1)指定查找该父项目pom.xml的(相对)路径。默认顺序：relativePath > 本地仓库 > 远程仓库
+        2)没有relativePath标签等同…/pom.xml, 即默认从当前pom文件的上一级目录找
+        3)表示不从relativePath找, 直接从本地仓库找,找不到再从远程仓库找
+    -->
+    <parent>
+        <groupId>com.bbs.cloud.admin</groupId>
+        <artifactId>study_bbs_admin</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
