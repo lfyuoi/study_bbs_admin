@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bbs.cloud.admin.service.mapper.ServiceGoldMapper">
+
+   <resultMap id="base_result" type="com.bbs.cloud.admin.service.dto.ServiceGoldDTO">
+       <id column="id" property="id" jdbcType="VARCHAR" />
+       <result column="name" property="name" jdbcType="VARCHAR" />
+       <result column="gold" property="gold" jdbcType="INTEGER" />
+       <result column="used_gold" property="usedGold" jdbcType="INTEGER" />
+       <result column="unused_gold" property="unusedGold" jdbcType="INTEGER" />
+   </resultMap>
+
+    <sql id="table">service_gold</sql>
+
+    <sql id="base_column">id, name, gold, used_gold, unused_gold</sql>
+
+    <select id="queryServiceGoldDTO" resultMap="base_result">
+        select * from
+            <include refid="table" />
+        where name=#{name}
+    </select>
+
+    <insert id="insertServiceGold">
+        insert into
+            <include refid="table" />
+        ( <include refid="base_column" /> )
+        values
+        (#{id}, #{name}, #{gold}, #{usedGold}, #{unusedGold})
+    </insert>
+
+    <update id="updateServiceGold">
+        update
+            <include refid="table" />
+        set gold=#{gold}, used_gold=#{usedGold}, unused_gold=#{unusedGold}
+        where id=#{id}
+    </update>
+
+</mapper>

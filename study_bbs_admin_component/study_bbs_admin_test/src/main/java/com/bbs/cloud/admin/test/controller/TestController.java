@@ -9,6 +9,7 @@ import com.bbs.cloud.admin.test.service.TestService;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
@@ -20,7 +21,8 @@ import org.slf4j.Logger;
 public class TestController {
 
 
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(TestController.class);
+    final static  org.slf4j.Logger logger = LoggerFactory.getLogger(TestController.class);
+
     @Autowired
     private TestService testService;
 
@@ -34,10 +36,9 @@ public class TestController {
     private RabbitTemplate rabbitTemplate;
 
     @Autowired
+    @Qualifier("com.bbs.cloud.admin.common.feigh.client.TestFeighClient")
     private TestFeighClient  testFeighClient;
 
-
-    final static Logger logger = LoggerFactory.getLogger(TestController.class);
 
     @RequestMapping("/hello")
     public HttpResult hello(){

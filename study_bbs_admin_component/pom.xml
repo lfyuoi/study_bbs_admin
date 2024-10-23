@@ -20,6 +20,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>study_bbs_admin_test</module>
+        <module>study_bbs_admin_service</module>
     </modules>
 
     <dependencies>
