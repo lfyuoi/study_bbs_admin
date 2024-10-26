@@ -17,6 +17,7 @@ public class ServiceController {
 
     @PostMapping("/send/message")
     public HttpResult sendMessage(@RequestBody OrderMessageParam param) {
+
         return serviceService.sendMessage(param);
     }
 

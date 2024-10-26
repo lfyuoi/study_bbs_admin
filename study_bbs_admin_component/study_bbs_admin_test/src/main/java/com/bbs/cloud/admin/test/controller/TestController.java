@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 public class TestController {
 
 
-    final static  org.slf4j.Logger logger = LoggerFactory.getLogger(TestController.class);
+    final static  Logger logger = LoggerFactory.getLogger(TestController.class);
 
     @Autowired
     private TestService testService;

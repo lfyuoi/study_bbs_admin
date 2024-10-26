@@ -9,6 +9,7 @@ import com.bbs.cloud.admin.service.mapper.ServiceGoldMapper;
 import com.bbs.cloud.admin.service.message.MessageHandler;
 import com.bbs.cloud.admin.service.message.dto.OrderMessageDto;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GoldOrderMessageHandler implements MessageHandler {
 
-    final static  org.slf4j.Logger logger = LoggerFactory.getLogger(GoldOrderMessageHandler.class);
+    final static Logger logger = LoggerFactory.getLogger(GoldOrderMessageHandler.class);
 
     @Autowired
     private ServiceGoldMapper serviceGoldMapper;

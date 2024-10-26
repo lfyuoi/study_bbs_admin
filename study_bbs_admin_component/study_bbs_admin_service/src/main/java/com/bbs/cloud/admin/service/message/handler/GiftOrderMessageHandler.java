@@ -9,6 +9,7 @@ import com.bbs.cloud.admin.service.enums.ServiceTypeEnum;
 import com.bbs.cloud.admin.service.mapper.ServiceGiftMapper;
 import com.bbs.cloud.admin.service.message.MessageHandler;
 import com.bbs.cloud.admin.service.message.dto.OrderMessageDto;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ import java.util.Map;
 @Component
 public class GiftOrderMessageHandler implements MessageHandler {
 
-    final static  org.slf4j.Logger logger = LoggerFactory.getLogger(GiftOrderMessageHandler.class);
+    final static Logger logger = LoggerFactory.getLogger(GiftOrderMessageHandler.class);
 
     @Autowired
     private ServiceGiftMapper serviceGiftMapper;
@@ -40,6 +41,7 @@ public class GiftOrderMessageHandler implements MessageHandler {
                     serviceGiftDTO.setUnusedAmount(ServiceContant.DEFAULT_SERVICE_UNUSED_GIFT_AMOUNT);
                     serviceGiftDTO.setUsedAmount(ServiceContant.DEFAULT_SERVICE_USED_GIFT_AMOUNT);
                     serviceGiftMapper.insertGiftDTO(serviceGiftDTO);
+                    continue;
                 }else {
                     /**
                      * TODO: 去查询活动礼物的情况，来进行库存更新

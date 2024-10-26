@@ -22,13 +22,13 @@ public class ServiceFeighClientFallback implements ServiceFeighClient {
         return null;
     }
 
-    @Override
-    public HttpResult<Integer> queryServiceGold() {
-        return null;
-    }
-
-    @Override
-    public HttpResult updateServiceGold(Integer usedGold) {
-        return null;
-    }
+//    @Override
+//    public HttpResult<Integer> queryServiceGold() {
+//        return null;
+//    }
+//
+//    @Override
+//    public HttpResult updateServiceGold(Integer usedGold) {
+//        return null;
+//    }
 }

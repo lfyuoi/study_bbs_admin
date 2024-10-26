@@ -5,6 +5,7 @@ import com.bbs.cloud.admin.common.util.JsonUtils;
 import com.bbs.cloud.admin.service.message.dto.OrderMessageDto;
 import com.bbs.cloud.admin.service.service.ServiceService;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import java.util.List;
 @Component
 public class MessageReceiver {
 
-    final static org.slf4j.Logger logger = LoggerFactory.getLogger(ServiceService.class);
+    final static Logger logger = LoggerFactory.getLogger(ServiceService.class);
 
     @Autowired
     private List<MessageHandler> messageHandlers;

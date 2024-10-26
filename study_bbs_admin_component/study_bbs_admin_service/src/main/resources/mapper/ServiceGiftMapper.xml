@@ -36,6 +36,12 @@
         where id=#{id}
     </update>
 
+    <select id="queryGiftDTO" resultMap="base_result">
+        select * from
+        <include refid="table" />
+        where gift_type=#{giftType}
+    </select>
+
     <select id="queryGiftDTOList" resultMap="base_result">
         select * from
         <include refid="table" />
