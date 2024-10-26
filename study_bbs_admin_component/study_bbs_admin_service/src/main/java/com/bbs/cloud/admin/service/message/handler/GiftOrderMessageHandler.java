@@ -1,6 +1,9 @@
 package com.bbs.cloud.admin.service.message.handler;
 
 import com.bbs.cloud.admin.common.enums.gift.GiftEnum;
+import com.bbs.cloud.admin.common.error.CommonExceptionEnum;
+import com.bbs.cloud.admin.common.feigh.client.ActivityFeighClient;
+import com.bbs.cloud.admin.common.result.HttpResult;
 import com.bbs.cloud.admin.common.util.CommonUtil;
 import com.bbs.cloud.admin.common.util.JsonUtils;
 import com.bbs.cloud.admin.service.contant.ServiceContant;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
+import java.net.ConnectException;
 import java.util.Map;
 @Component
 public class GiftOrderMessageHandler implements MessageHandler {
@@ -24,6 +28,8 @@ public class GiftOrderMessageHandler implements MessageHandler {
     @Autowired
     private ServiceGiftMapper serviceGiftMapper;
 
+    @Autowired
+    private ActivityFeighClient activityFeighClient;
 
     @Override
     public void handler(OrderMessageDto orderMessageDto) {
@@ -43,6 +49,21 @@ public class GiftOrderMessageHandler implements MessageHandler {
                     serviceGiftMapper.insertGiftDTO(serviceGiftDTO);
                     continue;
                 }else {
+                    logger.info("开始处理礼物服务订单-整理库存,message={}", JsonUtils.objectToJson(serviceGiftDTO));
+                    HttpResult<Integer> result = activityFeighClient.queryServiceGiftTotal(giftType);
+                    if (result == null ||!result.getCode().equals(CommonExceptionEnum.SUCCESS.getCode())|| result.getData() == null) {
+                        logger.error("远程获取活动组件礼物的使用情况,发生异常,礼物信息={}", JsonUtils.objectToJson(serviceGiftDTO));
+                        result.setCode(0);
+                    }
+                    Integer usedActivityGiftAmount = result.getData();
+                    Integer amount = serviceGiftDTO.getAmount() + ServiceContant.DEFAULT_SERVICE_GIFT_AMOUNT;
+                    Integer usedAmount = usedActivityGiftAmount;
+                    Integer unusedAmount = amount - usedAmount;
+
+                    serviceGiftDTO.setAmount(amount);
+                    serviceGiftDTO.setUsedAmount(usedAmount);
+                    serviceGiftDTO.setUnusedAmount(unusedAmount);
+                    serviceGiftMapper.updateGiftDTO(serviceGiftDTO);
                     /**
                      * TODO: 去查询活动礼物的情况，来进行库存更新
                      */

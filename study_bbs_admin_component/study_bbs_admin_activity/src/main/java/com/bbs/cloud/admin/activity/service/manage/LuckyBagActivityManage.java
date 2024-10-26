@@ -15,11 +15,13 @@ import com.bbs.cloud.admin.activity.service.ActivityService;
 import com.bbs.cloud.admin.common.contant.RedisContant;
 import com.bbs.cloud.admin.common.enums.activity.ActivityStatusEnum;
 import com.bbs.cloud.admin.common.enums.activity.ActivityTypeEnum;
+import com.bbs.cloud.admin.common.enums.activity.LuckyBagStatusEnum;
 import com.bbs.cloud.admin.common.error.CommonExceptionEnum;
 import com.bbs.cloud.admin.common.error.HttpException;
 import com.bbs.cloud.admin.common.feigh.client.ServiceFeighClient;
 import com.bbs.cloud.admin.common.result.HttpResult;
 import com.bbs.cloud.admin.common.util.CommonUtil;
+import com.bbs.cloud.admin.common.util.JedisUtil;
 import com.bbs.cloud.admin.common.util.JsonUtils;
 import com.bbs.cloud.admin.common.util.RedisLockHelper;
 import com.netflix.discovery.converters.Auto;
@@ -29,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import redis.clients.jedis.Jedis;
 
 import javax.xml.ws.http.HTTPException;
 import java.beans.Transient;
@@ -51,6 +54,9 @@ public class LuckyBagActivityManage implements ActivityManage {
     @Autowired
     private RedisLockHelper redisLockHelper;
 
+    @Autowired
+    private JedisUtil jedisUtil;
+
     @Override
     @Transactional(rollbackFor = {HttpException.class, Exception.class})
     public HttpResult createActivity(CreateActivityParam param) {
@@ -68,7 +74,7 @@ public class LuckyBagActivityManage implements ActivityManage {
 
         String key = RedisContant.BBS_CLOUD_LOCK_GIFT_KEY;
         try {
-            if (redisLockHelper.lock(key,CommonUtil.createUUID(),10000L)){
+            if (redisLockHelper.lock(key,CommonUtil.createUUID(),3000L)){
                 HttpResult<Integer> result = serviceFeighClient.queryServiceGiftTotal();
                 if (result  == null || !CommonExceptionEnum.SUCCESS.getCode().equals(result.getCode()) || result.getData() == null){
                     logger.info("开始创建福袋活动,远程调用，获取服务端礼物总数量失败,请求参数：{}，result:{} ",JsonUtils.objectToJson(param),JsonUtils.objectToJson(result));
@@ -169,14 +175,66 @@ public class LuckyBagActivityManage implements ActivityManage {
         return Integer.valueOf(randomNum);
     }
 
+    @Transactional(rollbackFor = {Exception.class})
     @Override
-    public HttpResult startActivity(OperatorActivityParam param) {
-        return null;
+    public HttpResult startActivity(ActivityDTO activityDTO) {
+        logger.info("启动福袋活动,请求参数：{}", JsonUtils.objectToJson(activityDTO));
+        String key = RedisContant.BBS_CLOUD_LOCK_ACTIVITY;
+        try {
+            if (redisLockHelper.lock(key,CommonUtil.createUUID(),3000L)){
+                activityDTO.setStatus(ActivityStatusEnum.RUNNING.getStatus());
+                activityDTO.setStartDate(new Date());
+                activityDTO.setUpdateDate(new Date());
+                activityMapper.updateActivity(activityDTO);
+
+                List<LuckyBagDTO> luckyBagDTOList = luckyBagMapper.queryLuckyBag(activityDTO.getId());
+                luckyBagDTOList.forEach(item -> {
+                    jedisUtil.lpush(RedisContant.BBS_CLOUD_ACTIVITY_LUCKY_BAG_LIST,JsonUtils.objectToJson(item));
+                });
+
+            }else {
+                logger.info("启动福袋活动,请勿重复操作,请求参数：{}",JsonUtils.objectToJson(activityDTO));
+                return HttpResult.generateHttpResult(ActivityException.ACTIVITY_NOT_REPEAT_MANAGE);
+            }
+
+        }catch (Exception e){
+            logger.info("启动福袋活动,发生异常,请求参数：{}",JsonUtils.objectToJson(activityDTO));
+            jedisUtil.del(RedisContant.BBS_CLOUD_ACTIVITY_LUCKY_BAG_LIST);
+            e.printStackTrace();
+            throw e;
+        }finally {
+            redisLockHelper.releaseLock(key);
+        }
+        return HttpResult.ok();
     }
 
+    @Transactional(rollbackFor = {Exception.class})
     @Override
-    public HttpResult endActivity(OperatorActivityParam param) {
-        return null;
+    public HttpResult endActivity(ActivityDTO activityDTO){
+        logger.info("终止福袋活动,请求参数：{}", JsonUtils.objectToJson(activityDTO));
+        String key = RedisContant.BBS_CLOUD_LOCK_ACTIVITY;
+        try {
+            if (redisLockHelper.lock(key,CommonUtil.createUUID(),3000L)){
+                activityDTO.setStatus(ActivityStatusEnum.END.getStatus());
+                activityDTO.setEndDate(new Date());
+                activityDTO.setUpdateDate(new Date());
+                activityMapper.updateActivity(activityDTO);
+                jedisUtil.del(RedisContant.BBS_CLOUD_ACTIVITY_LUCKY_BAG_LIST);
+
+                luckyBagMapper.updateLuckyBag(activityDTO.getId(), LuckyBagStatusEnum.INVALID.getStatus(), LuckyBagStatusEnum.NORMAL.getStatus());
+            }else {
+                logger.info("终止福袋活动,请勿重复操作,请求参数：{}",JsonUtils.objectToJson(activityDTO));
+                return HttpResult.generateHttpResult(ActivityException.ACTIVITY_NOT_REPEAT_MANAGE);
+            }
+
+        }catch (Exception e){
+            logger.info("终止福袋活动,发生异常,请求参数：{}",JsonUtils.objectToJson(activityDTO));
+            e.printStackTrace();
+            throw e;
+        }finally {
+            redisLockHelper.releaseLock(key);
+        }
+        return HttpResult.ok();
     }
 
     @Override
