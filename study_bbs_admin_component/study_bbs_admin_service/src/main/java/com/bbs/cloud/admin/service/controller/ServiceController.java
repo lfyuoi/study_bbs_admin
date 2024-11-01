@@ -23,6 +23,6 @@ public class ServiceController {
 
     @GetMapping("/query")
     public HttpResult queryService() {
-        return null;
+        return serviceService.queryService();
     }
 }

@@ -2,7 +2,6 @@ package com.bbs.cloud.admin.test.config;
 
 
 import com.bbs.cloud.admin.common.contant.RabbitContant;
-
 import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

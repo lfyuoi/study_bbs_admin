@@ -25,6 +25,48 @@ public class ActivityDTO {
      */
     private Integer status;
 
+    /**
+     * 活动类型
+     * {@link ActivityTypeEnum}
+     */
+    private Integer activityType;
+
+    /**
+     * 福袋/礼物/红包的数量
+     */
+    private Integer amount;
+
+    /**
+     * 红包总额度
+     */
+    private Integer quota;
+
+    /**
+     * 活动背景地址
+     */
+    private String imgLink;
+
+    /**
+     * 创建时间
+     */
+    private Date createDate;
+
+    /**
+     * 更新时间
+     */
+    private Date updateDate;
+
+    /**
+     * 活动开始时间
+     */
+    private Date startDate;
+
+    /**
+     * 活动终止时间
+     */
+    private Date endDate;
+
+
     public String getId() {
         return id;
     }
@@ -121,45 +163,5 @@ public class ActivityDTO {
         this.endDate = endDate;
     }
 
-    /**
-     * 活动类型
-     * {@link ActivityTypeEnum}
-     */
-    private Integer activityType;
-
-    /**
-     * 福袋/礼物/红包的数量
-     */
-    private Integer amount;
-
-    /**
-     * 红包总额度
-     */
-    private Integer quota;
-
-    /**
-     * 活动背景地址
-     */
-    private String imgLink;
-
-    /**
-     * 创建时间
-     */
-    private Date createDate;
-
-    /**
-     * 更新时间
-     */
-    private Date updateDate;
-
-    /**
-     * 活动开始时间
-     */
-    private Date startDate;
-
-    /**
-     * 活动终止时间
-     */
-    private Date endDate;
 
 }

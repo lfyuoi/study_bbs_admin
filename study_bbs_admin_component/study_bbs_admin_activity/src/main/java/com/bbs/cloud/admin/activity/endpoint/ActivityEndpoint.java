@@ -15,10 +15,18 @@ public class ActivityEndpoint {
 
     @Autowired
     private ActivityService activityService;
+
     @GetMapping("/gift/used/amount/query")
     public HttpResult<Integer> queryGiftTotalByType(@RequestParam("giftType") Integer giftType){
 
         return activityService.queryGiftTotalByType(giftType);
+    }
+
+
+    @GetMapping("/gold/used/query")
+    public HttpResult<Integer> queryUsedGold(){
+
+        return activityService.queryUsedGold();
     }
 }
 

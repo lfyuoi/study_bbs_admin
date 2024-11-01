@@ -2,7 +2,6 @@ package com.bbs.cloud.admin.service.endpoint;
 
 import com.bbs.cloud.admin.common.result.HttpResult;
 import com.bbs.cloud.admin.service.service.ServiceService;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,5 +26,16 @@ public class ServiceEndpoint {
     @PostMapping("/gift/list/update")
     public  HttpResult updateServiceGiftList(@RequestParam("data") String data){
         return serviceService.updateServiceGiftList(data);
+    }
+
+    @PostMapping("/gold/query")
+    public HttpResult<Integer> queryServiceGold(){
+        return serviceService.queryServiceGold();
+
+    }
+
+    @PostMapping("/gold/update")
+    public  HttpResult updateServiceGold(@RequestParam("usedGold") Integer usedGold){
+        return serviceService.updateServiceGold(usedGold);
     }
 }

@@ -4,7 +4,6 @@ import com.bbs.cloud.admin.activity.dto.LuckyBagDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-
 import java.util.List;
 
 @Mapper

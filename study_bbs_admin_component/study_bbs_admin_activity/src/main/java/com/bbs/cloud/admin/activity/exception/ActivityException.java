@@ -40,6 +40,7 @@ public enum ActivityException implements ExceptionCode {
     ACTIVITY_STATUS_IS_NOT_NULL(600017, "活动状态不能为空", "ACTIVITY_STATUS_IS_NOT_NULL"),
 
 
+
     /**
      * 福袋活动-------------------------------------------start
      */
@@ -56,6 +57,8 @@ public enum ActivityException implements ExceptionCode {
     LUCKY_BAG_ACTIVITY_SERVICE_GIFT_AMOUNT_NOT_MEET(601006, "系统服务礼物数量不足", "LUCKY_BAG_ACTIVITY_SERVICE_GIFT_AMOUNT_NOT_MEET"),
 
     LUCKY_BAG_ACTIVITY_SERVICE_GIFT_LIST_UPDATE_FAIL(601007, "服务组件礼物列表更新失败", "LUCKY_BAG_ACTIVITY_SERVICE_GIFT_LIST_UPDATE_FAIL"),
+
+    LUCKY_BAG_ACTIVITY_ADD_FAIL(601008, "福袋活动-添加活动失败", "LUCKY_BAG_ACTIVITY_ADD_FAIL"),
 
     /**
      * 福袋活动--------------------------------------------end

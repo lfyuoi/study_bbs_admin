@@ -61,39 +61,39 @@
         select * from activity
     </select>
 
-<!--    <select id="queryActivityCountByCondition" resultType="java.lang.Integer">-->
-<!--        select count(*) from activity-->
-<!--        where 1 = 1-->
-<!--        <if test="typeList != null">-->
-<!--            and activity_type in-->
-<!--            <foreach collection="typeList" item="item" open="(" close=")" separator=",">-->
-<!--                #{item}-->
-<!--            </foreach>-->
-<!--        </if>-->
-<!--        <if test="statusList != null">-->
-<!--            and status in-->
-<!--            <foreach collection="statusList" item="item" open="(" close=")" separator=",">-->
-<!--                #{item}-->
-<!--            </foreach>-->
-<!--        </if>-->
-<!--    </select>-->
+    <select id="queryActivityCountByCondition" resultType="java.lang.Integer">
+        select count(*) from activity
+        where 1 = 1
+        <if test="typeList != null">
+            and activity_type in
+            <foreach collection="typeList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="statusList != null">
+            and status in
+            <foreach collection="statusList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 
-<!--    <select id="queryActivityByCondition" resultMap="base_result">-->
-<!--        select * from activity-->
-<!--        where 1 = 1-->
-<!--        <if test="typeList != null">-->
-<!--            and activity_type in-->
-<!--            <foreach collection="typeList" item="item" open="(" close=")" separator=",">-->
-<!--                #{item}-->
-<!--            </foreach>-->
-<!--        </if>-->
-<!--        <if test="statusList != null">-->
-<!--            and status in-->
-<!--            <foreach collection="statusList" item="item" open="(" close=")" separator=",">-->
-<!--                #{item}-->
-<!--            </foreach>-->
-<!--        </if>-->
-<!--        order by create_date desc-->
-<!--        limit #{start}, #{limit}-->
-<!--    </select>-->
+    <select id="queryActivityByCondition" resultMap="base_result">
+        select * from activity
+        where 1 = 1
+        <if test="typeList != null">
+            and activity_type in
+            <foreach collection="typeList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="statusList != null">
+            and status in
+            <foreach collection="statusList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        order by create_date desc
+        limit #{start}, #{limit}
+    </select>
 </mapper>

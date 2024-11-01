@@ -4,7 +4,6 @@ import com.bbs.cloud.admin.service.dto.ServiceGiftDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-
 import java.util.List;
 
 @Mapper

@@ -21,10 +21,10 @@ public interface ServiceFeighClient {
     public HttpResult updateServiceGiftList(@RequestParam("data") String data);
 
 
-//    @GetMapping("service/endpoint/gold/query")
-//    public HttpResult<Integer> queryServiceGold();
-//
-//
-//    @PostMapping("service/endpoint/gold/update")
-//    public HttpResult updateServiceGold(@RequestParam("usedGold") Integer usedGold);
+    @PostMapping("service/endpoint/gold/query")
+    public HttpResult<Integer> queryServiceGold();
+
+
+    @PostMapping("service/endpoint/gold/update")
+    public HttpResult updateServiceGold(@RequestParam("usedGold") Integer usedGold);
 }

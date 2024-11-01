@@ -1,6 +1,5 @@
 package com.bbs.cloud.admin.activity.service.manage;
 
-
 import com.bbs.cloud.admin.activity.contant.ActivityContant;
 import com.bbs.cloud.admin.activity.dto.ActivityDTO;
 import com.bbs.cloud.admin.activity.dto.GiftDTO;
@@ -26,7 +25,6 @@ import com.bbs.cloud.admin.common.util.RedisLockHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -34,7 +32,7 @@ import org.springframework.util.ObjectUtils;
 import java.util.*;
 
 @Service
-public class LuckyBagActivityManage implements ActivityManage {
+public class ScoreExchangeLuckBagActivityManage implements ActivityManage {
 
     final static Logger logger = LoggerFactory.getLogger(ActivityService.class);
 
@@ -52,38 +50,36 @@ public class LuckyBagActivityManage implements ActivityManage {
 
     @Autowired
     private JedisUtil jedisUtil;
-    @Autowired
-    private ScoreExchangeLuckBagActivityManage scoreExchangeLuckBagActivityManage;
 
     @Override
     @Transactional(rollbackFor = {HttpException.class, Exception.class})
     public HttpResult createActivity(CreateActivityParam param) {
-        logger.info("开始创建福袋活动,请求参数 {}", JsonUtils.objectToJson(param));
+        logger.info("开始创建积分兑换福袋活动,请求参数 {}", JsonUtils.objectToJson(param));
         Integer amount = param.getAmount();
         if (ObjectUtils.isEmpty(amount)) {
-            logger.info("开始创建福袋活动,福袋数量为空,请求参数：{}",JsonUtils.objectToJson(param));
-            return HttpResult.generateHttpResult(ActivityException.LUCKY_BAG_ACTIVITY_AMOUNT_IS_NOT_NULL);
+            logger.info("开始创建积分兑换福袋活动,福袋数量为空,请求参数：{}",JsonUtils.objectToJson(param));
+            return HttpResult.generateHttpResult(ActivityException.SCORE_LUCKY_BAG_ACTIVITY_AMOUNT_IS_NOT_NULL);
         }
         if (amount < ActivityContant.DEFAULT_LUCKY_BAG_ACTIVITY_MIN_AMOUNT){
-            logger.info("开始创建福袋活动,福袋数量小于1,请求参数：{}",JsonUtils.objectToJson(param));
-            return HttpResult.generateHttpResult(ActivityException.LUCKY_BAG_ACTIVITY_AMOUNT_LESS_THAN_ONE);
+            logger.info("开始创建积分兑换福袋活动,福袋数量小于1,请求参数：{}",JsonUtils.objectToJson(param));
+            return HttpResult.generateHttpResult(ActivityException.SCORE_LUCKY_BAG_ACTIVITY_AMOUNT_LESS_THAN_ONE);
 
         }
 
         String key = RedisContant.BBS_CLOUD_LOCK_GIFT_KEY;
         try {
-            if (redisLockHelper.lock(key,CommonUtil.createUUID(),3000L)){
+            if (redisLockHelper.lock(key, CommonUtil.createUUID(),3000L)){
                 HttpResult<Integer> result = serviceFeighClient.queryServiceGiftTotal();
                 if (result  == null || !CommonExceptionEnum.SUCCESS.getCode().equals(result.getCode()) || result.getData() == null){
-                    logger.info("开始创建福袋活动,远程调用，获取服务端礼物总数量失败,请求参数：{}，result:{} ",JsonUtils.objectToJson(param),JsonUtils.objectToJson(result));
-                    return HttpResult.generateHttpResult(ActivityException.LUCKY_BAG_ACTIVITY_SERVICE_GIFT_AMOUNT_FAIL);
+                    logger.info("开始创建积分兑换福袋活动,远程调用，获取服务端礼物总数量失败,请求参数：{}，result:{} ",JsonUtils.objectToJson(param),JsonUtils.objectToJson(result));
+                    return HttpResult.generateHttpResult(ActivityException.SCORE_LUCKY_BAG_ACTIVITY_SERVICE_GIFT_AMOUNT_FAIL);
                 }
                 Integer total = result.getData();
                 if (total < amount){
-                    logger.info("开始创建福袋活动,远程调用，获取服务端礼物总数量不足,请求参数：{}，result:{} ",JsonUtils.objectToJson(param),JsonUtils.objectToJson(result));
-                    return HttpResult.generateHttpResult(ActivityException.LUCKY_BAG_ACTIVITY_SERVICE_GIFT_AMOUNT_NOT_MEET);
+                    logger.info("开始创建积分兑换福袋活动,远程调用，获取服务端礼物总数量不足,请求参数：{}，result:{} ",JsonUtils.objectToJson(param),JsonUtils.objectToJson(result));
+                    return HttpResult.generateHttpResult(ActivityException.SCORE_LUCKY_BAG_ACTIVITY_SERVICE_GIFT_AMOUNT_NOT_MEET);
                 }
-                logger.info("开始创建福袋活动---开始创建活动,请求参数：{}，result:{} ",JsonUtils.objectToJson(param));
+                logger.info("开始创建积分兑换福袋活动---开始创建活动,请求参数：{}，result:{} ",JsonUtils.objectToJson(param));
                 //第一步：创建活动
                 ActivityDTO activityDTO = new ActivityDTO();
                 activityDTO.setId(CommonUtil.createUUID());
@@ -94,29 +90,28 @@ public class LuckyBagActivityManage implements ActivityManage {
                 activityDTO.setStatus(ActivityStatusEnum.INITIAL.getStatus());
                 activityDTO.setCreateDate(new Date());
                 activityDTO.setUpdateDate(new Date());
-
-                try {
-                    activityMapper.insertActivityDTO(activityDTO);
-                }catch (Exception e){
-                    logger.info("开始创建福袋活动---添加活动失败,请求参数：{}，result:{} ",JsonUtils.objectToJson(param),JsonUtils.objectToJson(activityDTO));
-                    throw new HttpException(ActivityException.LUCKY_BAG_ACTIVITY_ADD_FAIL);
-                }
+                activityMapper.insertActivityDTO(activityDTO);
 
                 //第二步：包装福袋
-                packLuckyBag(amount, activityDTO.getId());
+                List<GiftDTO> updateGiftDtoCollection= packLuckyBag(amount, activityDTO.getId());
 
+                //第三步：更新服务组件的礼物列表
+                HttpResult updateResult = serviceFeighClient.updateServiceGiftList(JsonUtils.objectToJson(updateGiftDtoCollection));
+                if (updateResult == null || !CommonExceptionEnum.SUCCESS.getCode().equals(updateResult.getCode())){
+                    throw new HttpException(ActivityException.SCORE_LUCKY_BAG_ACTIVITY_SERVICE_GIFT_LIST_UPDATE_FAIL);
+                }
             }else {
-                logger.info("开始创建福袋活动,请勿重复操作,请求参数：{}",JsonUtils.objectToJson(param));
+                logger.info("开始创建积分兑换福袋活动,请勿重复操作,请求参数：{}",JsonUtils.objectToJson(param));
                 return HttpResult.generateHttpResult(ActivityException.ACTIVITY_NOT_REPEAT_MANAGE);
             }
         }catch (HttpException e){
-            logger.info("开始创建福袋活动,发生HttpException异常,请求参数：{}",JsonUtils.objectToJson(param));
+            logger.info("开始创建积分兑换福袋活动,发生HttpException异常,请求参数：{}",JsonUtils.objectToJson(param));
             e.printStackTrace();
             throw  e;
         }catch (Exception e){
-            logger.info("开始创建福袋活动,Exception,请求参数：{}",JsonUtils.objectToJson(param));
+            logger.info("开始创建积分兑换福袋活动,Exception,请求参数：{}",JsonUtils.objectToJson(param));
             e.printStackTrace();
-            return HttpResult.fail();
+            throw  e;
         }finally {
             redisLockHelper.releaseLock(key);
         }
@@ -129,12 +124,12 @@ public class LuckyBagActivityManage implements ActivityManage {
      * @param activityId
      * @return
      */
-    private  void  packLuckyBag(Integer amount,String activityId) {
-        logger.info("开始创建福袋活动---开始包装福袋,amount ：{}，result:{} ",amount,activityId);
+    private  List<GiftDTO>  packLuckyBag(Integer amount,String activityId) {
+        logger.info("开始创建积分兑换福袋活动---开始包装福袋,amount ：{}，result:{} ",amount,activityId);
         HttpResult<String> result = serviceFeighClient.queryServiceGiftList();
         if(result == null || !CommonExceptionEnum.SUCCESS.getCode().equals(result.getCode()) || result.getData() == null) {
-            logger.info("开始创建福袋活动, 包装福袋方法内, 远程调用, 获取服务组件礼物列表失败, amount:{}, activityId:{}, result:{}", amount, activityId, JsonUtils.objectToJson(result));
-            throw new HttpException(ActivityException.LUCKY_BAG_ACTIVITY_QUERY_SERVICE_GIFT_LIST_ERROR);
+            logger.info("开始创建积分兑换福袋活动, 包装福袋方法内, 远程调用, 获取服务组件礼物列表失败, amount:{}, activityId:{}, result:{}", amount, activityId, JsonUtils.objectToJson(result));
+            throw new HttpException(ActivityException.SCORE_LUCKY_BAG_ACTIVITY_QUERY_SERVICE_GIFT_LIST_ERROR);
         }
         String giftListJson = result.getData();
         List<GiftDTO> giftDTOS = JsonUtils.jsonToList(giftListJson, GiftDTO.class);
@@ -157,26 +152,10 @@ public class LuckyBagActivityManage implements ActivityManage {
             giftDTO.setUnusedAmount(giftDTO.getUnusedAmount() - ActivityContant.DEFAULT_LUCKY_BAG_CONSUME_AMOUNT);
             giftDTOMap.put(luckyBagDTO.getGiftType(),giftDTO);
         }
+        luckyBagMapper.insertLuckyBag(luckyBagDTOList);
+
         List giftDTOList = Arrays.asList(giftDTOMap.values().toArray());
-        //第三步：更新服务组件的礼物列表
-        logger.info("开始创建福袋活动---更新服务组件礼物列表,请求参数：{}",JsonUtils.objectToJson(giftDTOList));
-        HttpResult updateResult = serviceFeighClient.updateServiceGiftList(JsonUtils.objectToJson(giftDTOList));
-        if (updateResult == null || !CommonExceptionEnum.SUCCESS.getCode().equals(updateResult.getCode())){
-            logger.info("开始创建福袋活动, 更新服务组件礼物列表异常,请求参数：{}",JsonUtils.objectToJson(giftDTOList));
-            throw new HttpException(ActivityException.LUCKY_BAG_ACTIVITY_SERVICE_GIFT_LIST_UPDATE_FAIL);
-        }
-        //批量添加福袋
-        try {
-            luckyBagMapper.insertLuckyBag(luckyBagDTOList);
-        }catch (Exception e){
-            logger.error("开始创建福袋活动, 批量添加福袋异常,请求参数：{}",JsonUtils.objectToJson(luckyBagDTOList),e);
-            logger.info("开始创建福袋活动, 批量添加福袋异常,补偿服务组件礼物列表,请求参数：{}",JsonUtils.objectToJson(giftDTOS));
-            serviceFeighClient.updateServiceGiftList(JsonUtils.objectToJson(giftDTOS));
-            logger.info("开始创建福袋活动, 批量添加福袋异常,补偿服务组件礼物列表,补偿成功,请求参数：{}",JsonUtils.objectToJson(giftDTOS));
-            throw new HttpException(ActivityException.LUCKY_BAG_ACTIVITY_LUCKY_BAG_BATCH_INSERT_ERROR);
-        }
-
-
+        return giftDTOList;
     }
 
     /**
@@ -193,7 +172,7 @@ public class LuckyBagActivityManage implements ActivityManage {
     @Transactional(rollbackFor = {Exception.class})
     @Override
     public HttpResult startActivity(ActivityDTO activityDTO) {
-        logger.info("启动福袋活动,请求参数：{}", JsonUtils.objectToJson(activityDTO));
+        logger.info("启动积分兑换福袋活动,请求参数：{}", JsonUtils.objectToJson(activityDTO));
         String key = RedisContant.BBS_CLOUD_LOCK_ACTIVITY;
         try {
             if (redisLockHelper.lock(key,CommonUtil.createUUID(),3000L)){
@@ -204,17 +183,17 @@ public class LuckyBagActivityManage implements ActivityManage {
 
                 List<LuckyBagDTO> luckyBagDTOList = luckyBagMapper.queryLuckyBag(activityDTO.getId());
                 luckyBagDTOList.forEach(item -> {
-                    jedisUtil.lpush(RedisContant.BBS_CLOUD_ACTIVITY_LUCKY_BAG_LIST,JsonUtils.objectToJson(item));
+                    jedisUtil.lpush(RedisContant.BBS_CLOUD_ACTIVITY_SCORE_LUCKY_BAG_LIST,JsonUtils.objectToJson(item));
                 });
 
             }else {
-                logger.info("启动福袋活动,请勿重复操作,请求参数：{}",JsonUtils.objectToJson(activityDTO));
+                logger.info("启动积分兑换福袋活动,请勿重复操作,请求参数：{}",JsonUtils.objectToJson(activityDTO));
                 return HttpResult.generateHttpResult(ActivityException.ACTIVITY_NOT_REPEAT_MANAGE);
             }
 
         }catch (Exception e){
-            logger.info("启动福袋活动,发生异常,请求参数：{}",JsonUtils.objectToJson(activityDTO));
-            jedisUtil.del(RedisContant.BBS_CLOUD_ACTIVITY_LUCKY_BAG_LIST);
+            logger.info("启动积分兑换福袋活动,发生异常,请求参数：{}",JsonUtils.objectToJson(activityDTO));
+            jedisUtil.del(RedisContant.BBS_CLOUD_ACTIVITY_SCORE_LUCKY_BAG_LIST);
             e.printStackTrace();
             throw e;
         }finally {
@@ -226,7 +205,7 @@ public class LuckyBagActivityManage implements ActivityManage {
     @Transactional(rollbackFor = {Exception.class})
     @Override
     public HttpResult endActivity(ActivityDTO activityDTO){
-        logger.info("终止福袋活动,请求参数：{}", JsonUtils.objectToJson(activityDTO));
+        logger.info("终止积分兑换福袋活动,请求参数：{}", JsonUtils.objectToJson(activityDTO));
         String key = RedisContant.BBS_CLOUD_LOCK_ACTIVITY + activityDTO.getId();
         try {
             if (redisLockHelper.lock(key,CommonUtil.createUUID(),3000L)){
@@ -234,16 +213,16 @@ public class LuckyBagActivityManage implements ActivityManage {
                 activityDTO.setEndDate(new Date());
                 activityDTO.setUpdateDate(new Date());
                 activityMapper.updateActivity(activityDTO);
-                jedisUtil.del(RedisContant.BBS_CLOUD_ACTIVITY_LUCKY_BAG_LIST);
+                jedisUtil.del(RedisContant.BBS_CLOUD_ACTIVITY_SCORE_LUCKY_BAG_LIST);
 
                 luckyBagMapper.updateLuckyBag(activityDTO.getId(), LuckyBagStatusEnum.INVALID.getStatus(), LuckyBagStatusEnum.NORMAL.getStatus());
             }else {
-                logger.info("终止福袋活动,请勿重复操作,请求参数：{}",JsonUtils.objectToJson(activityDTO));
+                logger.info("终止积分兑换福袋活动,请勿重复操作,请求参数：{}",JsonUtils.objectToJson(activityDTO));
                 return HttpResult.generateHttpResult(ActivityException.ACTIVITY_NOT_REPEAT_MANAGE);
             }
 
         }catch (Exception e){
-            logger.info("终止福袋活动,发生异常,请求参数：{}",JsonUtils.objectToJson(activityDTO));
+            logger.info("终止积分兑换福袋活动,发生异常,请求参数：{}",JsonUtils.objectToJson(activityDTO));
             e.printStackTrace();
             throw e;
         }finally {
@@ -254,6 +233,6 @@ public class LuckyBagActivityManage implements ActivityManage {
 
     @Override
     public Integer getActivityType() {
-        return ActivityTypeEnum.LUCKY_BAG.getType();
+        return ActivityTypeEnum.SCORE_EXCHANGE_LUCKY_BAG.getType();
     }
 }
