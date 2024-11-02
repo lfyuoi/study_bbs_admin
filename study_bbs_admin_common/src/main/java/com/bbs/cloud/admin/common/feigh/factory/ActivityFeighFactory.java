@@ -1,7 +1,6 @@
 package com.bbs.cloud.admin.common.feigh.factory;
 
 import com.bbs.cloud.admin.common.feigh.client.ActivityFeighClient;
-import com.bbs.cloud.admin.common.feigh.client.ServiceFeighClient;
 import com.bbs.cloud.admin.common.feigh.fallback.ActivityFeighClientFallback;
 import feign.hystrix.FallbackFactory;
 import org.springframework.stereotype.Component;

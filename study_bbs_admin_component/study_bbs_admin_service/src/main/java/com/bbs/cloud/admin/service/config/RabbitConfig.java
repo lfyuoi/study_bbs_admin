@@ -1,4 +1,4 @@
-package com.bbs.cloud.admin.test.config;
+package com.bbs.cloud.admin.service.config;
 
 
 import com.bbs.cloud.admin.common.contant.RabbitContant;
@@ -13,7 +13,7 @@ public class RabbitConfig {
     @Bean("bootExchange")
     public Exchange getExchange() {
         return ExchangeBuilder
-                .topicExchange(RabbitContant.TEST_EXCHANGE_NAME )//交换机类型 ;参数为名字
+                .topicExchange(RabbitContant.SERVICE_EXCHANGE_NAME )//交换机类型 ;参数为名字
                 .durable(true)//是否持久化，true即存到磁盘,false只在内存上
                 .build();
     }
@@ -21,7 +21,7 @@ public class RabbitConfig {
     //创建队列
     @Bean("bootQueue")
     public Queue getMessageQueue() {
-        return new Queue(RabbitContant.TEST_QUEUE_NAME);
+        return new Queue(RabbitContant.SERVICE_QUEUE_NAME);
     }
 
     //交换机绑定队列
@@ -31,7 +31,7 @@ public class RabbitConfig {
         return BindingBuilder
                 .bind(queue)
                 .to(exchange)
-                .with(RabbitContant.TEST_ROUTING_KEY)
+                .with(RabbitContant.SERVICE_ROUTING_KEY)
                 .noargs();
     }
 }

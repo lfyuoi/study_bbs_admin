@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bbs.cloud.admin.activity.mapper.ActivityGoldMapper" >
+
+    <resultMap id="base_result" type="com.bbs.cloud.admin.activity.dto.ActivityGoldDTO">
+        <result column="id" property="id" jdbcType="VARCHAR" />
+        <result column="activity_id" property="activityId" jdbcType="VARCHAR" />
+        <result column="quota" property="quota" jdbcType="INTEGER" />
+        <result column="unused_quota" property="unusedQuota" jdbcType="INTEGER" />
+        <result column="used_quota" property="usedQuota" jdbcType="INTEGER" />
+        <result column="status" property="status" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="table">activity_gold</sql>
+
+    <sql id="base_column">id, activity_id, quota, unused_quota, used_quota, status</sql>
+
+    <insert id="insertActivityGoldDTO">
+        insert into
+            <include refid="table" />
+            (<include refid="base_column" />)
+        values
+            (#{id}, #{activityId}, #{quota}, #{unusedQuota}, #{usedQuota}, #{status})
+    </insert>
+
+    <select id="queryActivityGoldDTOByActivityId" resultMap="base_result">
+        select * from
+        <include refid="table" />
+        where activity_id=#{activityId}
+    </select>
+
+    <update id="updateActivityGoldDTO">
+        update <include refid="table" />
+        set unused_quota=#{unusedQuota},
+        used_quota=#{usedQuota},
+        status=#{status}
+        where id=#{id}
+    </update>
+
+    <select id="queryUsedAmountTotalByStatus" resultType="java.lang.Integer">
+        select sum(used_quota) from
+        <include refid="table" />
+        where status=#{status}
+    </select>
+
+    <select id="queryActivityGoldDTOByStatus" resultMap="base_result">
+        select * from
+        <include refid="table" />
+        where status=#{status}
+    </select>
+</mapper>

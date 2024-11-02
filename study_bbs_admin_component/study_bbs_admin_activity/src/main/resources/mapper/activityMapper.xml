@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bbs.cloud.admin.activity.mapper.ActivityMapper" >
+
+    <resultMap id="base_result" type="com.bbs.cloud.admin.activity.dto.ActivityDTO">
+        <result column="id" property="id" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="content" property="content" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="INTEGER" />
+        <result column="activity_type" property="activityType" jdbcType="INTEGER" />
+        <result column="amount" property="amount" jdbcType="INTEGER" />
+        <result column="quota" property="quota" jdbcType="INTEGER" />
+        <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="update_date" property="updateDate" jdbcType="TIMESTAMP" />
+        <result column="start_date" property="startDate" jdbcType="TIMESTAMP" />
+        <result column="end_date" property="endDate" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="table">activity</sql>
+
+    <sql id="base_column">
+        id, name, content, status, activity_type, amount, quota, create_date, update_date, start_date, end_date
+    </sql>
+
+    <select id="queryActivityById" resultMap="base_result">
+        select * from activity where id=#{id}
+    </select>
+
+    <select id="queryActivityByType" resultMap="base_result">
+        select * from activity
+        where
+        activity_type=#{activityType} and
+        status in
+        (
+        <foreach collection="statusList" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <insert id="insertActivityDTO">
+        insert into
+        <include refid="table" />
+        (<include refid="base_column" />)
+        values
+        (#{id}, #{name}, #{content}, #{status}, #{activityType}, #{amount},
+        #{quota}, #{createDate}, #{updateDate}, #{startDate}, #{endDate})
+    </insert>
+
+    <update id="updateActivity">
+        update
+        <include refid="table" />
+        set status=#{status},
+        update_date=#{updateDate},
+        start_date=#{startDate},
+        end_date=#{endDate}
+        where id=#{id}
+    </update>
+
+    <select id="queryActivityList" resultMap="base_result">
+        select * from activity
+    </select>
+
+    <select id="queryActivityCountByCondition" resultType="java.lang.Integer">
+        select count(*) from activity
+        where 1 = 1
+        <if test="typeList != null">
+            and activity_type in
+            <foreach collection="typeList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="statusList != null">
+            and status in
+            <foreach collection="statusList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="queryActivityByCondition" resultMap="base_result">
+        select * from activity
+        where 1 = 1
+        <if test="typeList != null">
+            and activity_type in
+            <foreach collection="typeList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="statusList != null">
+            and status in
+            <foreach collection="statusList" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        order by create_date desc
+        limit #{start}, #{limit}
+    </select>
+</mapper>

@@ -1,17 +1,16 @@
 package com.bbs.cloud.admin.common.feigh.factory;
 
 import com.bbs.cloud.admin.common.feigh.client.ServiceFeighClient;
-import com.bbs.cloud.admin.common.feigh.client.TestFeighClient;
 import com.bbs.cloud.admin.common.feigh.fallback.ServiceFeighClientFallback;
 import feign.hystrix.FallbackFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ServiceFeighFactory implements FallbackFactory<ServiceFeighClient> {
+public class ServiceFeignFactory implements FallbackFactory<ServiceFeighClient> {
 
     private final ServiceFeighClientFallback serviceFeighClientFallback;
 
-    public ServiceFeighFactory(ServiceFeighClientFallback serviceFeighClientFallback) {
+    public ServiceFeignFactory(ServiceFeighClientFallback serviceFeighClientFallback) {
         this.serviceFeighClientFallback = serviceFeighClientFallback;
     }
 
