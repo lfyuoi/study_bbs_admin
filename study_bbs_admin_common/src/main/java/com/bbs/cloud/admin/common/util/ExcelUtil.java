@@ -11,6 +11,15 @@ import java.util.List;
 
 public class ExcelUtil<T> {
 
+    /**
+     * 导出Excel
+     * @param response 响应流
+     * @param fileName 文件名
+     * @param sheetName sheet名
+     * @param headers   表头
+     * @param propertys 属性
+     * @param data 数据
+     */
     public static void exportExcel(HttpServletResponse response,
                             String fileName,
                             String sheetName,

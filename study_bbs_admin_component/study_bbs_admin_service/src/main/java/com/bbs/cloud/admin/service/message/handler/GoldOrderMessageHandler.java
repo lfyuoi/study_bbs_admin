@@ -1,5 +1,6 @@
 package com.bbs.cloud.admin.service.message.handler;
 
+import com.bbs.cloud.admin.common.contant.RabbitContant;
 import com.bbs.cloud.admin.common.contant.RedisContant;
 import com.bbs.cloud.admin.common.error.CommonExceptionEnum;
 import com.bbs.cloud.admin.common.feigh.client.ActivityFeighClient;
@@ -67,7 +68,8 @@ public class GoldOrderMessageHandler implements MessageHandler {
                     serviceGoldMapper.updateServiceGold(serviceGoldDTO);
 
                     /**
-                     * TODO:去管理过去活动中金币的使用情况，进行库存更新
+                     * TODO:完成
+                     * 去管理过去活动中金币的使用情况，进行库存更新
                      */
                 }
             }

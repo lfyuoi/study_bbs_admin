@@ -1,5 +1,6 @@
 package com.bbs.cloud.admin.service.message.handler;
 
+import com.bbs.cloud.admin.common.contant.RabbitContant;
 import com.bbs.cloud.admin.common.contant.RedisContant;
 import com.bbs.cloud.admin.common.enums.gift.GiftEnum;
 import com.bbs.cloud.admin.common.error.CommonExceptionEnum;
@@ -50,6 +51,7 @@ public class GiftOrderMessageHandler implements MessageHandler {
                 for (GiftEnum giftEnum : giftsMap.values()) {
                     Integer giftType = giftEnum.getGiftType();
                     ServiceGiftDTO serviceGiftDTO = serviceGiftMapper.queryGiftDTO(giftType);
+                    //尚未初始化
                     if (serviceGiftDTO == null) {
                         serviceGiftDTO = new ServiceGiftDTO();
                         serviceGiftDTO.setGiftType(giftType);
@@ -61,6 +63,7 @@ public class GiftOrderMessageHandler implements MessageHandler {
                         continue;
                     } else {
                         logger.info("开始处理礼物服务订单-整理库存,message={}", JsonUtils.objectToJson(serviceGiftDTO));
+                        //远程调用活动组件查询礼物情况
                         HttpResult<Integer> result = activityFeighClient.queryServiceGiftTotal(giftType);
                         if (result == null || !result.getCode().equals(CommonExceptionEnum.SUCCESS.getCode()) || result.getData() == null) {
                             logger.error("远程获取活动组件礼物的使用情况,发生异常,礼物信息={}", JsonUtils.objectToJson(serviceGiftDTO));
@@ -76,7 +79,8 @@ public class GiftOrderMessageHandler implements MessageHandler {
                         serviceGiftDTO.setUnusedAmount(unusedAmount);
                         serviceGiftMapper.updateGiftDTO(serviceGiftDTO);
                         /**
-                         * TODO: 去查询活动礼物的情况，来进行库存更新
+                         * TODO: 完成
+                         * 去查询活动礼物的情况，来进行库存更新
                          */
                     }
                 }

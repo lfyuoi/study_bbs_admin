@@ -94,7 +94,6 @@ public class ServiceService {
         }
         logger.info("远程调用 ----- 获取到服务组件的礼物总数量, total:{}", total);
         return new HttpResult<>(total);
-
     }
 
     public HttpResult<String> queryServiceGiftList() {

@@ -26,7 +26,6 @@ import com.bbs.cloud.admin.common.util.RedisLockHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -52,8 +51,6 @@ public class LuckyBagActivityManage implements ActivityManage {
 
     @Autowired
     private JedisUtil jedisUtil;
-    @Autowired
-    private ScoreExchangeLuckBagActivityManage scoreExchangeLuckBagActivityManage;
 
     @Override
     @Transactional(rollbackFor = {HttpException.class, Exception.class})
@@ -192,7 +189,7 @@ public class LuckyBagActivityManage implements ActivityManage {
 
     @Transactional(rollbackFor = {Exception.class})
     @Override
-    public HttpResult startActivity(ActivityDTO activityDTO) {
+    public HttpResult   startActivity(ActivityDTO activityDTO) {
         logger.info("启动福袋活动,请求参数：{}", JsonUtils.objectToJson(activityDTO));
         String key = RedisContant.BBS_CLOUD_LOCK_ACTIVITY;
         try {
